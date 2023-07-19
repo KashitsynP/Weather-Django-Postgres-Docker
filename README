@@ -1,0 +1,83 @@
+==================    Для запуска приложения локально:    ==================
+
+1. Создаем папку с проектом, клонируем в неё репозиторий
+
+2. Создаем виртуальное окружение
+
+3. Устанавливаем зависимости из файла requirements.txt
+
+4. Необходимо создать файл .env в корне приложения (рядом с файлом manage.py) со следующими настройками:
+    DEBUG=1
+    SECRET_KEY=your_secret_key
+
+    POSTGRES_DATABASE=weather
+    POSTGRES_USER=your_postgres_user_name
+    POSTGRES_PASSWORD=your_postgres_password
+    POSTGRES_PORT=5432
+    POSTGRES_HOST=localhost # db → если запускаем через docker, localhost → если запускаем локально
+    WEATHER_API=086f7016c78ca1cc36164f22cc73d8f2 # → Лучше получить свой API-key, зарегистрировавшись на сайте: https://api.openweathermap.org
+
+5. Установить PostgreSQL и pgadmin
+    5.1. Создать БД weather
+
+6. Находясь в корне приложения (там, где manage.py), в терминале прописать следующие команды:
+    python manage.py migrate (выполнить миграции)
+    python manage.py createsuperuser (регистрируем админа)
+
+7. Запускаем приложение 
+    python manage.py runserver
+
+8. В браузере переходим по ссылке localhost:8000 
+
+9. Вводим название города и наслаждаемся хорошей погодой (ведь у природы нет плохой погоды)
+
+
+
+
+==================   Для запуска приложения из docker:    ==================
+
+1. Скачать и установить DockerDesktop
+
+2. Создать рабочую директорию для проекта
+
+3. В рабочей директории создать файл docker-compose.yml и заполнить следующим содежимым:
+ (лучше взять файл из github, т.к. ошибка в отступах может быть критична)
+
+version: '3.9'
+services:
+web:
+    image: kashitsynp/weather
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+    - .:/weather/
+    ports:
+    - 0.0.0.0:8000:8000
+    depends_on:
+    - db
+
+db:
+    image: postgres:15.3
+    volumes:
+    - postgres_data:/var/lib/postgresql/data/
+    environment:
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=password
+    - POSTGRES_DB=weather
+    ports:
+    - 5432:5432
+
+volumes:
+postgres_data:
+
+3. В командной строке консоли ввести команду "docker pull kashitsynp/weather:latest"
+
+4. После чего в командной строке (находясь в директории yml-файла) прописать "docker-compose up -d"
+
+5. Заходим в docker-desktop, открываем вкладку Containers, находим образ kashitsynp/weather (web-1), проваливаемся в него.
+    Открываем вкладку terminal, в появившемся окне пишем команды:
+    "python manage.py migrate" (прогоняем миграции для БД)
+    "python manage.py createsuperuser" (регистрируем админа)
+
+6. Сервер должен быть уже запущен, потому переходим в браузер по ссылке "http://localhost:8000/"
+
+7. Вводим название города и наслаждаемся хорошей погодой (всякая погода - благодать)
